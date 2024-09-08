@@ -1,70 +1,88 @@
-const { Client, Events, GatewayIntentBits, SlashCommandBuilder } = require("discord.js");
-
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-
+const { Client, Events, GatewayIntentBits } = require("discord.js");
 const keepAlive = require('./keep_alive.js');
+
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
+
+const prefix = "#";
 
 keepAlive();
 
 client.once(Events.ClientReady, c => {
     console.log(`Logged in as ${c.user.tag}`);
-
-    const ping = new SlashCommandBuilder()
-        .setName('ping')
-        .setDescription('Replies with Pong!');
-
-    const hello = new SlashCommandBuilder()
-        .setName('hello')
-        .setDescription('Says hello to someone?')
-        .addUserOption(option => 
-            option
-                .setName('user')
-                .setDescription('The user to say hi to')
-                .setRequired(false)
-        );
-    const about_me = new SlashCommandBuilder()
-        .setName('about')
-        .setDescription('Who is he??') 
-   
-    const coinflip = new SlashCommandBuilder()
-        .setName('coinflip')
-        .setDescription('Flips a coin and returns Heads or Tails');
-
-    //my server
-    client.application.commands.create(ping, "1148943596993658890");
-    client.application.commands.create(hello, "1148943596993658890");
-    client.application.commands.create(coinflip, "1148943596993658890");
-    client.application.commands.create(about_me, "1148943596993658890");
-    // titan shuhabe server
-    client.application.commands.create(ping, "1262989720993005710");
-    client.application.commands.create(hello, "1262989720993005710");
-    client.application.commands.create(coinflip, "1262989720993005710");
-    client.application.commands.create(about_me, "1262989720993005710");
 });
 
-client.on(Events.InteractionCreate, interaction => {
-    if (!interaction.isChatInputCommand()) return;
 
-    if (interaction.commandName === "ping") {
-        interaction.reply(`Pong! Latency is ${client.ws.ping}ms.`);
+client.on(Events.MessageCreate, message => {
+    
+    if (!message.content.startsWith(prefix) || message.author.bot) return;
+
+    
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
+    const command = args.shift().toLowerCase();
+
+   
+    if (command === "ping") {
+        message.channel.send(`Pong! Latency is ${client.ws.ping}ms.`);
     }
 
-    if (interaction.commandName === "hello") {
-        let user = interaction.options.getUser('user');
-        if (!user) user = interaction.user;
-        interaction.reply(`Hello! ${user.username}, how may I help?`);
+    if (command === "hello") {
+        let user = message.mentions.users.first() || message.author;
+        message.channel.send(`Hello! ${user.username}, how may I help?`);
     }
 
-    if (interaction.commandName === "coinflip") {
+    if (command === "coinflip") {
         const result = Math.random() < 0.5 ? 'Heads' : 'Tails';
-        interaction.reply(`The coin landed on: ${result}`);
+        message.channel.send(`The coin landed on: ${result}`);
     }
 
-    if (interaction.commandName === "about"){
-        interaction.reply("Ehsan Quddusi is an Indian politician who has been involved in various controversies, particularly relating to corruption. He has served as a judge and was a former Orissa High Court judge. Quddusi's name became widely known in connection with a corruption scandal involving medical colleges in India, where he was accused of facilitating a bribe to influence a judicial decision related to the de-recognition of certain medical institutions. The case, which involved allegations of corruption at high levels of the judiciary, attracted significant media attention in India.");
-
+    if (command === "about") {
+        message.channel.send("Ehsan Quddusi is an Indian politician known for his involvement in various controversies, particularly relating to corruption. He has served as a judge and was a former Orissa High Court judge.");
     }
 
+    if (command === "joke") {
+        const jokes = [
+            "Why don't skeletons fight each other? They don't have the guts!",
+            "I told my wife she was drawing her eyebrows too high. She looked surprised.",
+            "Why don't scientists trust atoms? Because they make up everything!"
+        ];
+        const randomJoke = jokes[Math.floor(Math.random() * jokes.length)];
+        message.channel.send(randomJoke);
+    }
+
+    if (command === "roast") {
+        const roasts = [
+            "You're like a cloud. When you disappear, it's a beautiful day.",
+            "I'd agree with you but then we’d both be wrong.",
+            "You're proof that even a bad haircut can grow back."
+        ];
+        let user = message.mentions.users.first() || message.author;
+        const randomRoast = roasts[Math.floor(Math.random() * roasts.length)];
+        message.channel.send(`${user.username}, ${randomRoast}`);
+    }
+
+    if (command === "rps") {
+        const choices = ["rock", "paper", "scissors"];
+        const userChoice = args[0]?.toLowerCase();
+
+        if (!userChoice || !choices.includes(userChoice)) {
+            message.channel.send("Invalid choice! Choose rock, paper, or scissors.");
+            return;
+        }
+
+        const botChoice = choices[Math.floor(Math.random() * choices.length)];
+
+        if (userChoice === botChoice) {
+            message.channel.send(`It's a tie! We both chose ${botChoice}.`);
+        } else if (
+            (userChoice === "rock" && botChoice === "scissors") ||
+            (userChoice === "paper" && botChoice === "rock") ||
+            (userChoice === "scissors" && botChoice === "paper")
+        ) {
+            message.channel.send(`You win! I chose ${botChoice}.`);
+        } else {
+            message.channel.send(`I win! I chose ${botChoice}.`);
+        }
+    }
 });
 
 client.login(process.env.token);
