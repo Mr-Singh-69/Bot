@@ -63,4 +63,4 @@ client.on(Events.InteractionCreate, interaction => {
 
 });
 
-client.login(token);
+client.login(process.env.token);
