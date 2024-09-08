@@ -2,6 +2,10 @@ const { Client, Events, GatewayIntentBits, SlashCommandBuilder } = require("disc
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
+const keepAlive = require('./keep_alive.js');
+
+keepAlive();
+
 client.once(Events.ClientReady, c => {
     console.log(`Logged in as ${c.user.tag}`);
 
