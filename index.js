@@ -148,7 +148,7 @@ client.on(Events.MessageCreate, message => {
     const args = message.content.slice(prefix.length).trim().split(/ +/);
     const command = args.shift()?.toLowerCase();
 
-    if (message.content.toLowerCase() === "who is ehsan quddusi") {
+    if (message.content.toLowerCase() === "who is ehsan quddusi ?") {
         message.channel.send("Ehsan Quddusi is an Indian politician known for his involvement in various controversies, particularly relating to corruption. He has served as a judge and was a former Orissa High Court judge.");
         return;
     }
